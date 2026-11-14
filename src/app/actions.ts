@@ -32,7 +32,12 @@ export async function requestLogin(formData: FormData): Promise<void> {
   const token = await createLoginToken(email);
   const base = await currentBaseUrl();
   const url = `${base}/accedi/verifica?token=${token}&next=${encodeURIComponent(next)}`;
-  await sendLoginEmail({ to: email, url });
+
+  try {
+    await sendLoginEmail({ to: email, url });
+  } catch {
+    redirect(`/accedi?errore=invio&next=${encodeURIComponent(next)}`);
+  }
 
   redirect(`/accedi/inviato?email=${encodeURIComponent(email)}&next=${encodeURIComponent(next)}`);
 }

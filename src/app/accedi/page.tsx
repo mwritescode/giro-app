@@ -46,8 +46,8 @@ export default async function AccediPage({ searchParams }: { searchParams: Promi
 
         <p className="auth-note">È la tua prima volta? Creeremo un account per te.</p>
         <p className="auth-note">
-          Continuando accetti i <a href="/termini">Termini di servizio</a> e l&apos;
-          <a href="/privacy">Informativa privacy</a>.
+          Continuando accetti l&apos;<a href="/privacy">Informativa privacy</a>. Giro è un{" "}
+          <a href="/progetto">progetto dimostrativo</a>.
         </p>
       </div>
     </main>

@@ -129,7 +129,7 @@ export default async function ComeFunzionaPage() {
         <Link href="/" className="footer-brand">
           giro<span>.</span>
         </Link>
-        <Link href="/termini">Termini di servizio</Link>
+        <Link href="/progetto">Il progetto</Link>
         <Link href="/privacy">Privacy</Link>
       </footer>
     </>

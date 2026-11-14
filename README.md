@@ -42,10 +42,13 @@ the link is printed to the terminal running `pnpm dev`.
 2. Copy the `http://localhost:3000/accedi/verifica?token=…` line from the terminal.
 3. Open it. You are signed in and can save activities.
 
-Links expire after 15 minutes and work once. Sending happens behind
-`sendLoginEmail` in `src/lib/mailer.ts`, so swapping in a real provider is a
-one-function change. Set `APP_URL` if the printed link should point somewhere
-other than the request host.
+Links expire after 15 minutes and work once.
+
+Without a mailer key the link is printed to the terminal. To send real email,
+set `RESEND_API_KEY` (and optionally `RESEND_FROM`) in `.dev.vars` locally, or as
+a Worker secret in production. `sendLoginEmail` in `src/lib/mailer.ts` uses Resend
+when the key is present and falls back to the console otherwise. Set `APP_URL` if
+links should point somewhere other than the request host.
 
 ### The map worker
 
@@ -68,6 +71,8 @@ src/app/
   milano/page.tsx             discovery, Milan
   scegli-citta/page.tsx       city + radius chooser, incl. "not available" state
   attivita/[slug]/page.tsx    activity detail
+  progetto/page.tsx           what the project is and what it is not
+  privacy/page.tsx            privacy notice
   accedi/                     sign-in, "check your email", expired link
   accedi/verifica/route.ts    consumes the token, sets the session cookie
   preferiti/page.tsx          saved activities, filled and empty
@@ -119,5 +124,4 @@ such as Resend, and set `APP_URL` to the deployed origin.
 - Real map: MapLibre with OpenStreetMap tiles instead of the static map image
 - Share buttons and Open Graph previews for activities
 - "Come funziona", Terms and Privacy
-- Real email delivery for magic links
-- Privacy and terms pages
+- Real email delivery for magic links (code ready, key not configured)

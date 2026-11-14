@@ -3,7 +3,7 @@ import { Heart } from "lucide-react";
 import { AccountMenu } from "./AccountMenu";
 
 type SiteHeaderProps = {
-  active?: "esplora" | "preferiti" | "come-funziona";
+  active?: "esplora" | "preferiti" | "come-funziona" | null;
   user?: { email: string } | null;
 };
 
