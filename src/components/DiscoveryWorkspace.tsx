@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { ActivityCard } from "./ActivityCard";
@@ -30,7 +30,6 @@ export function DiscoveryWorkspace({
 }: DiscoveryWorkspaceProps) {
   const [selectedId, setSelectedId] = useState<number | null>(initialSelectedId);
   const [bounds, setBounds] = useState<MapBounds | null>(null);
-  const cardRefs = useRef(new Map<number, HTMLDivElement>());
   const saved = new Set(savedIds);
 
   const visible = bounds
@@ -51,10 +50,6 @@ export function DiscoveryWorkspace({
     const url = new URL(window.location.href);
     url.searchParams.set("selezionata", activity.slug);
     window.history.replaceState(null, "", url);
-
-    if (window.matchMedia("(min-width: 1081px)").matches) {
-      cardRefs.current.get(activity.id)?.scrollIntoView({ block: "nearest", behavior: "smooth" });
-    }
   }
 
   return (
@@ -95,23 +90,13 @@ export function DiscoveryWorkspace({
         ) : (
           <div className="experience-list">
             {visible.map((activity) => (
-              <div
+              <ActivityCard
                 key={activity.id}
-                ref={(element) => {
-                  if (element) {
-                    cardRefs.current.set(activity.id, element);
-                  } else {
-                    cardRefs.current.delete(activity.id);
-                  }
-                }}
-              >
-                <ActivityCard
-                  activity={activity}
-                  selected={selected?.id === activity.id}
-                  saved={saved.has(activity.id)}
-                  saveNext={saveNext}
-                />
-              </div>
+                activity={activity}
+                selected={selected?.id === activity.id}
+                saved={saved.has(activity.id)}
+                saveNext={saveNext}
+              />
             ))}
           </div>
         )}
