@@ -428,12 +428,28 @@ p {
   background: #eef1f5;
 }
 
-.map-panel img.city-map {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.map-canvas {
   position: absolute;
   inset: 0;
+}
+
+/* MapLibre adds its own class to the same element and positions it inline. */
+.price-pin.maplibregl-marker {
+  white-space: nowrap;
+}
+
+.map-noscript {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--color-muted);
+  font-size: 14px;
+}
+
+.search-area.is-active {
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
 }
 
 .search-area {

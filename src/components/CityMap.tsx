@@ -1,15 +1,22 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { LocateFixed, Minus, Plus, Search } from "lucide-react";
+import type { Map as MapLibreMap, Marker as MapLibreMarker } from "maplibre-gl";
+import "maplibre-gl/dist/maplibre-gl.css";
+import { LocateFixed, Minus, Plus, Search, X } from "lucide-react";
 import { formatPrice, formatSession } from "@/lib/format";
 import type { ActivitySummary, City } from "@/lib/types";
 
-const MAP_IMAGES: Record<string, string> = {
-  firenze: "/images/florence-map.png",
-  milano: "/images/milan-map.png",
-};
+const STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
+const DEFAULT_ZOOM = 12;
 
-const SPAN_LAT = 0.045;
-const SPAN_LNG = 0.062;
+export type MapBounds = {
+  west: number;
+  south: number;
+  east: number;
+  north: number;
+};
 
 type CityMapProps = {
   city: City;
@@ -17,64 +24,120 @@ type CityMapProps = {
   selected: ActivitySummary | null;
   radiusKm: number;
   onSelect: (activity: ActivitySummary) => void;
+  onSearchArea: (bounds: MapBounds) => void;
+  areaActive: boolean;
+  onClearArea: () => void;
 };
 
-export function CityMap({ city, activities, selected, radiusKm, onSelect }: CityMapProps) {
-  const minLat = city.lat - SPAN_LAT;
-  const maxLat = city.lat + SPAN_LAT;
-  const minLng = city.lng - SPAN_LNG;
-  const maxLng = city.lng + SPAN_LNG;
+export function CityMap({
+  city,
+  activities,
+  selected,
+  radiusKm,
+  onSelect,
+  onSearchArea,
+  areaActive,
+  onClearArea,
+}: CityMapProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<MapLibreMap | null>(null);
+  const markersRef = useRef<MapLibreMarker[]>([]);
+  const libraryRef = useRef<typeof import("maplibre-gl") | null>(null);
+  const onSelectRef = useRef(onSelect);
+  const [ready, setReady] = useState(false);
 
-  const pins = activities.slice(0, 10).map((activity) => {
-    const x = Math.min(94, Math.max(6, ((activity.venueLng - minLng) / (maxLng - minLng)) * 100));
-    const y = Math.min(88, Math.max(10, ((maxLat - activity.venueLat) / (maxLat - minLat)) * 100));
-    return { activity, x, y };
-  });
+  onSelectRef.current = onSelect;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      const library = await import("maplibre-gl");
+      if (cancelled || !containerRef.current) {
+        return;
+      }
+
+      libraryRef.current = library;
+
+      const map = new library.Map({
+        container: containerRef.current,
+        style: STYLE_URL,
+        center: [city.lng, city.lat],
+        zoom: DEFAULT_ZOOM,
+        attributionControl: { compact: true },
+      });
+
+      mapRef.current = map;
+      setReady(true);
+    })();
+
+    return () => {
+      cancelled = true;
+      markersRef.current.forEach((marker) => marker.remove());
+      markersRef.current = [];
+      mapRef.current?.remove();
+      mapRef.current = null;
+    };
+  }, [city.lat, city.lng]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    const library = libraryRef.current;
+    if (!map || !library || !ready) {
+      return;
+    }
+
+    markersRef.current.forEach((marker) => marker.remove());
+    markersRef.current = activities.map((activity) => {
+      const element = document.createElement("button");
+      element.type = "button";
+      element.className = `price-pin${selected?.id === activity.id ? " is-selected" : ""}`;
+      element.textContent = formatPrice(activity.priceCents);
+      element.setAttribute("aria-label", `${activity.title}, ${formatPrice(activity.priceCents)}`);
+      element.addEventListener("click", () => onSelectRef.current(activity));
+
+      return new library.Marker({ element })
+        .setLngLat([activity.venueLng, activity.venueLat])
+        .addTo(map);
+    });
+  }, [activities, selected, ready]);
 
   return (
     <section className="map-panel">
-      <img
-        className="city-map"
-        src={MAP_IMAGES[city.slug] ?? MAP_IMAGES.firenze}
-        alt={`Mappa di ${city.name}`}
-      />
+      <div ref={containerRef} className="map-canvas" />
+
+      <noscript>
+        <p className="map-noscript">La mappa interattiva richiede JavaScript.</p>
+      </noscript>
 
       <div className="map-location-label">
         {city.name} · entro {radiusKm} km
       </div>
 
-      <button className="search-area" type="button">
-        <Search size={16} /> Cerca in quest&apos;area
-      </button>
-
-      <div className="map-tools">
-        <button type="button" aria-label="Centra sulla città">
-          <LocateFixed size={19} />
+      {areaActive ? (
+        <button className="search-area is-active" type="button" onClick={onClearArea}>
+          <X size={15} /> Togli il filtro area
         </button>
-        <button type="button" aria-label="Ingrandisci">
-          <Plus size={19} />
+      ) : (
+        <button
+          className="search-area"
+          type="button"
+          onClick={() => {
+            const bounds = mapRef.current?.getBounds();
+            if (!bounds) {
+              return;
+            }
+            onSearchArea({
+              west: bounds.getWest(),
+              south: bounds.getSouth(),
+              east: bounds.getEast(),
+              north: bounds.getNorth(),
+            });
+          }}
+        >
+          <Search size={16} /> Cerca in quest&apos;area
         </button>
-        <button type="button" aria-label="Riduci">
-          <Minus size={19} />
-        </button>
-      </div>
-
-      {pins.map(({ activity, x, y }) => {
-        const isSelected = selected?.id === activity.id;
-        return (
-          <button
-            key={activity.id}
-            type="button"
-            className={`price-pin${isSelected ? " is-selected" : ""}`}
-            style={{ left: `${x}%`, top: `${y}%` }}
-            onClick={() => onSelect(activity)}
-            aria-pressed={isSelected}
-            aria-label={`${activity.title}, ${formatPrice(activity.priceCents)}`}
-          >
-            {formatPrice(activity.priceCents)}
-          </button>
-        );
-      })}
+      )}
 
       <div aria-live="polite">
         {selected ? (
@@ -102,7 +165,21 @@ export function CityMap({ city, activities, selected, radiusKm, onSelect }: City
         ) : null}
       </div>
 
-      <p className="map-attribution">© OpenStreetMap contributors</p>
+      <div className="map-tools">
+        <button
+          type="button"
+          aria-label="Centra sulla città"
+          onClick={() => mapRef.current?.flyTo({ center: [city.lng, city.lat], zoom: DEFAULT_ZOOM })}
+        >
+          <LocateFixed size={19} />
+        </button>
+        <button type="button" aria-label="Ingrandisci" onClick={() => mapRef.current?.zoomIn()}>
+          <Plus size={19} />
+        </button>
+        <button type="button" aria-label="Riduci" onClick={() => mapRef.current?.zoomOut()}>
+          <Minus size={19} />
+        </button>
+      </div>
     </section>
   );
 }

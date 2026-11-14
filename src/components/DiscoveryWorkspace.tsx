@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { ActivityCard } from "./ActivityCard";
-import { CityMap } from "./CityMap";
+import { CityMap, type MapBounds } from "./CityMap";
 import type { ActivitySummary, City } from "@/lib/types";
 
 type DiscoveryWorkspaceProps = {
@@ -29,10 +29,21 @@ export function DiscoveryWorkspace({
   initialSelectedId,
 }: DiscoveryWorkspaceProps) {
   const [selectedId, setSelectedId] = useState<number | null>(initialSelectedId);
+  const [bounds, setBounds] = useState<MapBounds | null>(null);
   const cardRefs = useRef(new Map<number, HTMLDivElement>());
   const saved = new Set(savedIds);
 
-  const selected = activities.find((activity) => activity.id === selectedId) ?? activities[0] ?? null;
+  const visible = bounds
+    ? activities.filter(
+        (activity) =>
+          activity.venueLat >= bounds.south &&
+          activity.venueLat <= bounds.north &&
+          activity.venueLng >= bounds.west &&
+          activity.venueLng <= bounds.east,
+      )
+    : activities;
+
+  const selected = visible.find((activity) => activity.id === selectedId) ?? visible[0] ?? null;
 
   function select(activity: ActivitySummary) {
     setSelectedId(activity.id);
@@ -53,12 +64,12 @@ export function DiscoveryWorkspace({
           <div>
             <h2>Da scoprire a {city.name}</h2>
             <p>
-              {activities.length === total
+              {visible.length === total
                 ? `${total} esperienze per piccoli curiosi`
-                : `${activities.length} di ${total} esperienze`}
+                : `${visible.length} di ${total} esperienze`}
             </p>
           </div>
-          <span className="results-count">{activities.length}</span>
+          <span className="results-count">{visible.length}</span>
         </div>
 
         {activities.length === 0 ? (
@@ -73,9 +84,17 @@ export function DiscoveryWorkspace({
               Rimuovi i filtri <ArrowRight size={17} />
             </Link>
           </div>
+        ) : visible.length === 0 ? (
+          <div className="empty-results">
+            <h2>Niente in quest&apos;area</h2>
+            <p>Sposta la mappa o allarga l&apos;area di ricerca.</p>
+            <button type="button" onClick={() => setBounds(null)}>
+              Togli il filtro area <ArrowRight size={17} />
+            </button>
+          </div>
         ) : (
           <div className="experience-list">
-            {activities.map((activity) => (
+            {visible.map((activity) => (
               <div
                 key={activity.id}
                 ref={(element) => {
@@ -104,7 +123,16 @@ export function DiscoveryWorkspace({
         </p>
       </aside>
 
-      <CityMap city={city} activities={activities} selected={selected} radiusKm={radiusKm} onSelect={select} />
+      <CityMap
+        city={city}
+        activities={visible}
+        selected={selected}
+        radiusKm={radiusKm}
+        onSelect={select}
+        onSearchArea={setBounds}
+        areaActive={bounds !== null}
+        onClearArea={() => setBounds(null)}
+      />
     </main>
   );
 }
