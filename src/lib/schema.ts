@@ -50,4 +50,31 @@ CREATE TABLE IF NOT EXISTS sessions (
 CREATE INDEX IF NOT EXISTS sessions_activity_idx ON sessions (activity_id);
 CREATE INDEX IF NOT EXISTS sessions_starts_idx ON sessions (starts_at);
 CREATE INDEX IF NOT EXISTS activities_venue_idx ON activities (venue_id);
+
+CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS login_tokens (
+  id INTEGER PRIMARY KEY,
+  email TEXT NOT NULL,
+  token_hash TEXT NOT NULL UNIQUE,
+  expires_at TEXT NOT NULL,
+  used_at TEXT
+);
+
+CREATE TABLE IF NOT EXISTS auth_sessions (
+  id TEXT PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+  expires_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS favourites (
+  user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+  activity_id INTEGER NOT NULL REFERENCES activities (id) ON DELETE CASCADE,
+  created_at TEXT NOT NULL,
+  PRIMARY KEY (user_id, activity_id)
+);
 `;

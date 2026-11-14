@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ArrowUpRight, CalendarDays, Clock3, Heart, MapPin, Users } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, CalendarDays, Clock3, MapPin, Users } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
+import { SaveButton } from "@/components/SaveButton";
 import { formatAges, formatDayLong, formatDuration, formatPrice, formatTime } from "@/lib/format";
-import { getActivityBySlug } from "@/lib/queries";
+import { getActivityBySlug, isFavourite } from "@/lib/queries";
+import { getSessionUser } from "@/lib/auth";
 import { CATEGORY_LABELS } from "@/lib/seed";
 
 const MAP_IMAGES: Record<string, string> = {
@@ -41,19 +43,24 @@ export default async function ActivityPage({ params }: PageProps) {
   }
 
   const firstSession = activity.sessions[0] ?? null;
+  const user = await getSessionUser();
+  const saved = user ? isFavourite(user.id, activity.id) : false;
 
   return (
     <>
-      <SiteHeader active="esplora" />
+      <SiteHeader active="esplora" user={user ? { email: user.email } : null} />
 
       <main className="detail-main">
         <div className="detail-back">
           <Link href={`/${activity.citySlug}`}>
             <ArrowLeft size={16} /> Torna alle esperienze a {activity.cityName}
           </Link>
-          <span>
-            <Heart size={17} /> Salva
-          </span>
+          <SaveButton
+            activityId={activity.id}
+            saved={saved}
+            next={`/attivita/${activity.slug}`}
+            withLabel
+          />
         </div>
 
         <div className="activity-hero">

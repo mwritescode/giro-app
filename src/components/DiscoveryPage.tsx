@@ -15,23 +15,30 @@ import { FilterPanel } from "./FilterPanel";
 import { SiteHeader } from "./SiteHeader";
 import { formatAges, formatDateRange } from "@/lib/format";
 import { buildHref, parseFilters } from "@/lib/params";
-import { countActivities, getCityBySlug, listActivities } from "@/lib/queries";
+import { countActivities, favouriteIdsFor, getCityBySlug, listActivities } from "@/lib/queries";
+import { getSessionUser } from "@/lib/auth";
 
 type DiscoveryPageProps = {
   citySlug: string;
   params: Record<string, string>;
 };
 
-export function DiscoveryPage({ citySlug, params }: DiscoveryPageProps) {
+export async function DiscoveryPage({ citySlug, params }: DiscoveryPageProps) {
   const city = getCityBySlug(citySlug);
   if (!city) {
     notFound();
   }
 
+  const user = await getSessionUser();
+  const savedIds = user ? favouriteIdsFor(user.id) : new Set<number>();
   const filters = parseFilters(params);
   const activities = listActivities(city.slug, filters);
   const total = countActivities(city.slug);
   const base = `/${city.slug}`;
+  const search = new URLSearchParams(params);
+  search.delete("pannello");
+  const query = search.toString();
+  const saveNext = query ? `${base}?${query}` : base;
 
   const dateLabel = filters.dates.length ? formatDateRange(filters.dates) : "Qualsiasi data";
   const ageLabel = filters.ages.length
@@ -45,7 +52,7 @@ export function DiscoveryPage({ citySlug, params }: DiscoveryPageProps) {
 
   return (
     <>
-      <SiteHeader active="esplora" />
+      <SiteHeader active="esplora" user={user ? { email: user.email } : null} />
 
       <section className="discovery-intro">
         <div>
@@ -137,7 +144,13 @@ export function DiscoveryPage({ citySlug, params }: DiscoveryPageProps) {
           ) : (
             <div className="experience-list">
               {activities.map((activity, index) => (
-                <ActivityCard key={activity.id} activity={activity} selected={index === 0} />
+                <ActivityCard
+                  key={activity.id}
+                  activity={activity}
+                  selected={index === 0}
+                  saved={savedIds.has(activity.id)}
+                  saveNext={saveNext}
+                />
               ))}
             </div>
           )}

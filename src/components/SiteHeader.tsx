@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { ChevronDown, Heart } from "lucide-react";
+import { Heart } from "lucide-react";
+import { AccountMenu } from "./AccountMenu";
 
 type SiteHeaderProps = {
   active?: "esplora" | "preferiti";
-  user?: { name: string } | null;
+  user?: { email: string } | null;
 };
 
 export function SiteHeader({ active = "esplora", user = null }: SiteHeaderProps) {
@@ -26,11 +27,7 @@ export function SiteHeader({ active = "esplora", user = null }: SiteHeaderProps)
           I tuoi preferiti
         </Link>
         {user ? (
-          <Link href="/account" className="account-button">
-            <span className="account-avatar">{user.name.slice(0, 1).toUpperCase()}</span>
-            <span>{user.name}</span>
-            <ChevronDown size={15} />
-          </Link>
+          <AccountMenu email={user.email} />
         ) : (
           <Link href="/accedi" className="signin-button">
             Accedi

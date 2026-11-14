@@ -208,3 +208,50 @@ export function getActivityBySlug(slug: string): ActivityDetail | null {
     })),
   };
 }
+
+export function listFavourites(userId: number): ActivitySummary[] {
+  const rows = getDb()
+    .prepare(
+      `SELECT a.id, a.slug, a.title, a.category, a.age_min, a.age_max, a.price_cents,
+              a.duration_minutes, a.summary, a.image,
+              v.name AS venue_name, v.address AS venue_address, v.lat AS venue_lat, v.lng AS venue_lng,
+              c.name AS city_name, c.slug AS city_slug,
+              (SELECT MIN(s.starts_at) FROM sessions s WHERE s.activity_id = a.id AND s.starts_at >= ?) AS next_start
+       FROM favourites f
+       JOIN activities a ON a.id = f.activity_id
+       JOIN venues v ON v.id = a.venue_id
+       JOIN cities c ON c.id = v.city_id
+       WHERE f.user_id = ?
+       ORDER BY f.created_at DESC`,
+    )
+    .all(new Date().toISOString().slice(0, 16), userId) as ActivityRow[];
+  return rows.map(toSummary);
+}
+
+export function favouriteIdsFor(userId: number): Set<number> {
+  const rows = getDb()
+    .prepare("SELECT activity_id FROM favourites WHERE user_id = ?")
+    .all(userId) as { activity_id: number }[];
+  return new Set(rows.map((row) => row.activity_id));
+}
+
+export function isFavourite(userId: number, activityId: number): boolean {
+  const row = getDb()
+    .prepare("SELECT 1 AS present FROM favourites WHERE user_id = ? AND activity_id = ?")
+    .get(userId, activityId) as { present: number } | undefined;
+  return Boolean(row);
+}
+
+export function toggleFavouriteRow(userId: number, activityId: number): boolean {
+  const db = getDb();
+  if (isFavourite(userId, activityId)) {
+    db.prepare("DELETE FROM favourites WHERE user_id = ? AND activity_id = ?").run(userId, activityId);
+    return false;
+  }
+  db.prepare("INSERT INTO favourites (user_id, activity_id, created_at) VALUES (?, ?, ?)").run(
+    userId,
+    activityId,
+    new Date().toISOString(),
+  );
+  return true;
+}

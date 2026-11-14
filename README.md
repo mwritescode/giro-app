@@ -24,6 +24,20 @@ pnpm dev
 Open http://localhost:3000. The database is created and seeded automatically on
 first request at `.data/giro.db` (gitignored). Delete that folder to re-seed.
 
+### Signing in locally
+
+Accounts use magic links, but there is no email service in local development:
+the link is printed to the terminal running `pnpm dev`.
+
+1. Go to `/accedi`, enter any email address.
+2. Copy the `http://localhost:3000/accedi/verifica?token=…` line from the terminal.
+3. Open it. You are signed in and can save activities.
+
+Links expire after 15 minutes and work once. Sending happens behind
+`sendLoginEmail` in `src/lib/mailer.ts`, so swapping in a real provider is a
+one-function change. Set `APP_URL` if the printed link should point somewhere
+other than the request host.
+
 ```bash
 pnpm build && pnpm start   # production build
 ```
@@ -37,11 +51,17 @@ src/app/
   milano/page.tsx             discovery, Milan
   scegli-citta/page.tsx       city + radius chooser, incl. "not available" state
   attivita/[slug]/page.tsx    activity detail
-src/components/               header, discovery, cards, map, filter panel
+  accedi/                     sign-in, "check your email", expired link
+  accedi/verifica/route.ts    consumes the token, sets the session cookie
+  preferiti/page.tsx          saved activities, filled and empty
+  actions.ts                  server actions: request login, toggle favourite, logout
+src/components/               header, account menu, discovery, cards, map, filter panel
 src/lib/
   schema.ts                   SQL schema, applied on boot
   seed.ts                     the catalogue: cities, venues, activities
-  queries.ts                  all reads, incl. filtering
+  queries.ts                  all reads, incl. filtering and favourites
+  auth.ts                     magic-link tokens, sessions, cookies
+  mailer.ts                   dev implementation: prints the link
   params.ts                   URL ⇄ filters (filters live in the query string)
   format.ts                   Italian dates, prices, durations
 ```
@@ -65,8 +85,8 @@ anything beyond a demo. Photos are placeholder assets from the design file.
 
 ## Not built yet
 
-- Accounts and favourites (magic link) — the UI is designed, the code is not written
 - Search with grouped suggestions (places / activities / interests)
 - Real map: MapLibre with OpenStreetMap tiles instead of the static map image
 - Share buttons and Open Graph previews for activities
 - "Come funziona", Terms and Privacy
+- Real email delivery for magic links
