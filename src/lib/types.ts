@@ -1,4 +1,4 @@
-import type { Category } from "./seed";
+import type { Category } from "./categories";
 
 export type City = {
   id: number;

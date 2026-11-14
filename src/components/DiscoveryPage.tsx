@@ -1,16 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  ArrowRight,
-  CalendarDays,
-  ChevronDown,
-  MapPin,
-  Search,
-  SlidersHorizontal,
-  X,
-} from "lucide-react";
-import { ActivityCard } from "./ActivityCard";
-import { CityMap } from "./CityMap";
+import { CalendarDays, ChevronDown, MapPin, Search, SlidersHorizontal, X } from "lucide-react";
+import { DiscoveryWorkspace } from "./DiscoveryWorkspace";
 import { FilterPanel } from "./FilterPanel";
 import { SiteHeader } from "./SiteHeader";
 import { formatAges, formatDateRange } from "@/lib/format";
@@ -35,10 +26,15 @@ export async function DiscoveryPage({ citySlug, params }: DiscoveryPageProps) {
   const activities = listActivities(city.slug, filters);
   const total = countActivities(city.slug);
   const base = `/${city.slug}`;
+
   const search = new URLSearchParams(params);
   search.delete("pannello");
   const query = search.toString();
   const saveNext = query ? `${base}?${query}` : base;
+
+  const selectedFromUrl = params.selezionata
+    ? activities.find((activity) => activity.slug === params.selezionata)
+    : undefined;
 
   const dateLabel = filters.dates.length ? formatDateRange(filters.dates) : "Qualsiasi data";
   const ageLabel = filters.ages.length
@@ -115,60 +111,16 @@ export async function DiscoveryPage({ citySlug, params }: DiscoveryPageProps) {
         <p className="filter-note">Un weekend, infinite curiosità.</p>
       </section>
 
-      <main className="discovery-workspace">
-        <aside className="results-panel">
-          <div className="results-heading">
-            <div>
-              <h2>Da scoprire a {city.name}</h2>
-              <p>
-                {activities.length === total
-                  ? `${total} esperienze per piccoli curiosi`
-                  : `${activities.length} di ${total} esperienze`}
-              </p>
-            </div>
-            <span className="results-count">{activities.length}</span>
-          </div>
-
-          {activities.length === 0 ? (
-            <div className="empty-results">
-              <h2>Un piccolo cambio di piani?</h2>
-              <p>
-                Non abbiamo trovato attività con questi filtri.
-                <br />
-                Prova un&apos;altra data o amplia il budget: la prossima scoperta potrebbe essere lì.
-              </p>
-              <Link href={base}>
-                Rimuovi i filtri <ArrowRight size={17} />
-              </Link>
-            </div>
-          ) : (
-            <div className="experience-list">
-              {activities.map((activity, index) => (
-                <ActivityCard
-                  key={activity.id}
-                  activity={activity}
-                  selected={index === 0}
-                  saved={savedIds.has(activity.id)}
-                  saveNext={saveNext}
-                />
-              ))}
-            </div>
-          )}
-
-          <p className="booking-note">
-            Hai trovato la tua prossima avventura?
-            <br />
-            Prenota direttamente sul sito dell&apos;organizzatore.
-          </p>
-        </aside>
-
-        <CityMap
-          city={city}
-          activities={activities}
-          selected={activities[0] ?? null}
-          radiusKm={filters.radiusKm ?? 10}
-        />
-      </main>
+      <DiscoveryWorkspace
+        city={city}
+        activities={activities}
+        total={total}
+        base={base}
+        savedIds={[...savedIds]}
+        saveNext={saveNext}
+        radiusKm={filters.radiusKm ?? 10}
+        initialSelectedId={selectedFromUrl?.id ?? null}
+      />
 
       {params.pannello === "1" ? <FilterPanel citySlug={city.slug} filters={filters} /> : null}
     </>

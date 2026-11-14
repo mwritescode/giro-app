@@ -73,6 +73,10 @@ works:
 /firenze?data=2026-11-21,2026-11-22&eta=6,7&gratis=1&interessi=arte&raggio=10
 ```
 
+Selecting a pin on the map updates the preview and the list highlight, and
+mirrors the choice into `selezionata` with `replaceState` — shareable, but
+without adding history entries, so Back never walks through pin taps.
+
 The filter panel is a plain `GET` form, so filtering works with no client-side
 JavaScript at all.
 

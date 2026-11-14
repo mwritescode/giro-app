@@ -528,8 +528,10 @@ p {
   font-size: 16px;
 }
 
-.selected-preview-footer button {
-  border: 0;
+.preview-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   border-radius: var(--radius-pill);
   background: var(--color-primary);
   color: #fff;

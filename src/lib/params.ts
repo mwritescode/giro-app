@@ -1,5 +1,5 @@
 import { upcomingWeekend } from "./format";
-import { CATEGORY_SLUGS, type Category } from "./seed";
+import { CATEGORY_SLUGS, type Category } from "./categories";
 import type { Filters } from "./types";
 
 export type RawParams = Record<string, string | string[] | undefined>;

@@ -1,5 +1,5 @@
 import { getDb } from "./db";
-import type { Category } from "./seed";
+import type { Category } from "./categories";
 import type { ActivityDetail, ActivitySession, ActivitySummary, City, Filters } from "./types";
 
 type CityRow = {

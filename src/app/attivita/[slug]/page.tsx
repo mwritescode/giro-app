@@ -6,7 +6,7 @@ import { SaveButton } from "@/components/SaveButton";
 import { formatAges, formatDayLong, formatDuration, formatPrice, formatTime } from "@/lib/format";
 import { getActivityBySlug, isFavourite } from "@/lib/queries";
 import { getSessionUser } from "@/lib/auth";
-import { CATEGORY_LABELS } from "@/lib/seed";
+import { CATEGORY_LABELS } from "@/lib/categories";
 
 const MAP_IMAGES: Record<string, string> = {
   firenze: "/images/florence-map.png",

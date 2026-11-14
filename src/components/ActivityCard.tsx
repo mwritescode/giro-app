@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { formatAges, formatPrice, formatSession } from "@/lib/format";
-import { CATEGORY_LABELS } from "@/lib/seed";
+import { CATEGORY_LABELS } from "@/lib/categories";
 import type { ActivitySummary } from "@/lib/types";
 import { SaveButton } from "./SaveButton";
 

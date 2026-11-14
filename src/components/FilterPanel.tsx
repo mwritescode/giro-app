@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, X } from "lucide-react";
 import { isoDate, upcomingWeekend } from "@/lib/format";
-import { CATEGORY_LABELS, CATEGORY_SLUGS } from "@/lib/seed";
+import { CATEGORY_LABELS, CATEGORY_SLUGS } from "@/lib/categories";
 import type { Filters } from "@/lib/types";
 
 type FilterPanelProps = {

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { LocateFixed, Minus, Plus, Search } from "lucide-react";
-import { formatSession, formatPrice } from "@/lib/format";
+import { formatPrice, formatSession } from "@/lib/format";
 import type { ActivitySummary, City } from "@/lib/types";
 
 const MAP_IMAGES: Record<string, string> = {
@@ -16,9 +16,10 @@ type CityMapProps = {
   activities: ActivitySummary[];
   selected: ActivitySummary | null;
   radiusKm: number;
+  onSelect: (activity: ActivitySummary) => void;
 };
 
-export function CityMap({ city, activities, selected, radiusKm }: CityMapProps) {
+export function CityMap({ city, activities, selected, radiusKm, onSelect }: CityMapProps) {
   const minLat = city.lat - SPAN_LAT;
   const maxLat = city.lat + SPAN_LAT;
   const minLng = city.lng - SPAN_LNG;
@@ -58,40 +59,48 @@ export function CityMap({ city, activities, selected, radiusKm }: CityMapProps) 
         </button>
       </div>
 
-      {pins.map(({ activity, x, y }) => (
-        <Link
-          key={activity.id}
-          href={`/attivita/${activity.slug}`}
-          className={`price-pin${selected?.id === activity.id ? " is-selected" : ""}`}
-          style={{ left: `${x}%`, top: `${y}%` }}
-        >
-          {formatPrice(activity.priceCents)}
-        </Link>
-      ))}
+      {pins.map(({ activity, x, y }) => {
+        const isSelected = selected?.id === activity.id;
+        return (
+          <button
+            key={activity.id}
+            type="button"
+            className={`price-pin${isSelected ? " is-selected" : ""}`}
+            style={{ left: `${x}%`, top: `${y}%` }}
+            onClick={() => onSelect(activity)}
+            aria-pressed={isSelected}
+            aria-label={`${activity.title}, ${formatPrice(activity.priceCents)}`}
+          >
+            {formatPrice(activity.priceCents)}
+          </button>
+        );
+      })}
 
-      {selected ? (
-        <article className="selected-preview">
-          <div className="selected-preview-photo">
-            <img src={`/images/${selected.image}.png`} alt="" />
-          </div>
-          <div className="selected-preview-content">
-            <div>
-              <p>{selected.venueName}</p>
-              <h3>{selected.title}</h3>
-              <span>{selected.nextStart ? formatSession(selected.nextStart) : ""}</span>
+      <div aria-live="polite">
+        {selected ? (
+          <article className="selected-preview">
+            <div className="selected-preview-photo">
+              <img src={`/images/${selected.image}.png`} alt="" />
             </div>
-            <div className="selected-preview-footer">
-              <strong>
-                {formatPrice(selected.priceCents)}
-                {selected.priceCents > 0 ? <small> / bambino</small> : null}
-              </strong>
-              <Link href={`/attivita/${selected.slug}`}>
-                <button type="button">Scopri</button>
-              </Link>
+            <div className="selected-preview-content">
+              <div>
+                <p>{selected.venueName}</p>
+                <h3>{selected.title}</h3>
+                <span>{selected.nextStart ? formatSession(selected.nextStart) : ""}</span>
+              </div>
+              <div className="selected-preview-footer">
+                <strong>
+                  {formatPrice(selected.priceCents)}
+                  {selected.priceCents > 0 ? <small> / bambino</small> : null}
+                </strong>
+                <Link href={`/attivita/${selected.slug}`} className="preview-cta">
+                  Scopri
+                </Link>
+              </div>
             </div>
-          </div>
-        </article>
-      ) : null}
+          </article>
+        ) : null}
+      </div>
 
       <p className="map-attribution">© OpenStreetMap contributors</p>
     </section>
