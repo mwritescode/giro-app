@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CalendarDays, ChevronDown, MapPin, Search, SlidersHorizontal, X } from "lucide-react";
 import { DiscoveryWorkspace } from "./DiscoveryWorkspace";
+import { AccountDeletedNotice } from "./AccountDeletedNotice";
 import { SearchBox } from "./SearchBox";
 import { FilterPanel } from "./FilterPanel";
 import { SiteHeader } from "./SiteHeader";
@@ -52,6 +53,8 @@ export async function DiscoveryPage({ citySlug, params }: DiscoveryPageProps) {
   return (
     <>
       <SiteHeader active="esplora" user={user ? { email: user.email } : null} />
+
+      {params.eliminato === "1" ? <AccountDeletedNotice /> : null}
 
       <section className="discovery-intro">
         <div>

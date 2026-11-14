@@ -117,3 +117,9 @@ export async function endSession(): Promise<void> {
   }
   store.delete(COOKIE_NAME);
 }
+
+export function deleteUser(userId: number, email: string): void {
+  const db = getDb();
+  db.prepare("DELETE FROM login_tokens WHERE email = ?").run(normaliseEmail(email));
+  db.prepare("DELETE FROM users WHERE id = ?").run(userId);
+}

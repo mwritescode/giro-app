@@ -2,7 +2,7 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { createLoginToken, endSession, getSessionUser } from "@/lib/auth";
+import { createLoginToken, deleteUser, endSession, getSessionUser } from "@/lib/auth";
 import { sendLoginEmail } from "@/lib/mailer";
 import { toggleFavouriteRow } from "@/lib/queries";
 
@@ -56,4 +56,19 @@ export async function toggleFavourite(formData: FormData): Promise<void> {
   }
 
   redirect(next);
+}
+
+export async function deleteAccount(formData: FormData): Promise<void> {
+  const user = await getSessionUser();
+
+  if (!user) {
+    redirect("/accedi");
+  }
+
+  const requested = String(formData.get("ritorno") ?? "");
+  const back = requested === "/milano" || requested === "/firenze" ? requested : "/firenze";
+
+  deleteUser(user.id, user.email);
+  await endSession();
+  redirect(`${back}?eliminato=1`);
 }
