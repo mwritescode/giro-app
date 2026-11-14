@@ -13,16 +13,19 @@ export default async function ScegliCittaPage({ searchParams }: { searchParams: 
   const selectedSlug = params.citta ?? "firenze";
 
   if (params.azione === "esplora") {
-    const city = getCityBySlug(selectedSlug);
+    const city = await getCityBySlug(selectedSlug);
     if (city?.available) {
       redirect(`/${city.slug}?raggio=${radius}`);
     }
   }
 
-  const results = query ? findCities(query) : listCities();
+  const allCities = await listCities();
+  const availableCities = allCities.filter((city) => city.available);
+  const availableCityNames = availableCities.map((city) => city.name);
+  const results = query ? await findCities(query) : allCities;
   const available = results.filter((city) => city.available);
   const unavailable = results.filter((city) => !city.available);
-  const selected = getCityBySlug(selectedSlug);
+  const selected = await getCityBySlug(selectedSlug);
 
   return (
     <main className="auth-shell">
@@ -55,7 +58,7 @@ export default async function ScegliCittaPage({ searchParams }: { searchParams: 
             <div className="city-unavailable">
               <h2>Non siamo ancora a {unavailable[0].name}</h2>
               <p>
-                Per ora puoi esplorare {listCities().filter((city) => city.available).map((city) => city.name).join(" e ")}
+                Per ora puoi esplorare {availableCityNames.join(" e ")}
                 , anche nei dintorni.
               </p>
             </div>
@@ -66,7 +69,7 @@ export default async function ScegliCittaPage({ searchParams }: { searchParams: 
               {unavailable.length > 0 && available.length === 0 ? "Scegli una città disponibile" : "Città disponibili"}
             </p>
 
-            {(available.length > 0 ? available : listCities().filter((city) => city.available)).map((city) => (
+            {(available.length > 0 ? available : availableCities).map((city) => (
               <label key={city.id} className={`city-option${city.slug === selectedSlug ? " is-selected" : ""}`}>
                 <input
                   type="radio"

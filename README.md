@@ -10,7 +10,7 @@ design. Every activity hands off to its organiser.
 ## Stack
 
 - Next.js 16 (App Router) + React 19 + TypeScript
-- SQLite through Node's built-in `node:sqlite` — no native modules, no ORM
+- Cloudflare D1 (SQLite) for data, with MapLibre for the map
 - Plain CSS with the design tokens from the design file
 - Lucide icons
 
@@ -21,8 +21,17 @@ pnpm install
 pnpm dev
 ```
 
-Open http://localhost:3000. The database is created and seeded automatically on
-first request at `.data/giro.db` (gitignored). Delete that folder to re-seed.
+Open http://localhost:3000. `next dev` runs with the Cloudflare bindings attached
+(see `initOpenNextCloudflareForDev` in `next.config.ts`), so the database is the
+same D1 you get in production, backed locally by `.wrangler/state`. The schema is
+created and the catalogue seeded on the first request. Delete `.wrangler/` to
+start from an empty database again.
+
+To run the app in the real Workers runtime instead of Node:
+
+```bash
+pnpm preview      # builds for Workers and serves on :8787
+```
 
 ### Signing in locally
 
@@ -66,6 +75,7 @@ src/app/
 src/components/               header, account menu, discovery, cards, map, filter panel
 src/lib/
   schema.ts                   SQL schema, applied on boot
+  d1.ts                       the D1 handle, schema and seed bootstrap
   seed.ts                     the catalogue: cities, venues, activities
   queries.ts                  all reads, incl. filtering and favourites
   auth.ts                     magic-link tokens, sessions, cookies
@@ -95,6 +105,14 @@ generated for the next six weekends. Venue names and addresses are real;
 coordinates are approximate and should be verified before this is used for
 anything beyond a demo. Photos are placeholder assets from the design file.
 
+## Deploying
+
+`pnpm deploy` builds for Workers and pushes to Cloudflare. It needs a Cloudflare
+account and `wrangler login` once, plus a real D1 database id in `wrangler.jsonc`
+(the placeholder there is for local development). Magic links also need a real
+sender: swap the console implementation in `src/lib/mailer.ts` for a provider
+such as Resend, and set `APP_URL` to the deployed origin.
+
 ## Not built yet
 
 - Search with grouped suggestions (places / activities / interests)
@@ -102,3 +120,4 @@ anything beyond a demo. Photos are placeholder assets from the design file.
 - Share buttons and Open Graph previews for activities
 - "Come funziona", Terms and Privacy
 - Real email delivery for magic links
+- Privacy and terms pages

@@ -1,7 +1,4 @@
 export const SCHEMA = `
-PRAGMA journal_mode = WAL;
-PRAGMA foreign_keys = ON;
-
 CREATE TABLE IF NOT EXISTS cities (
   id INTEGER PRIMARY KEY,
   slug TEXT NOT NULL UNIQUE,

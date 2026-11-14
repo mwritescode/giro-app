@@ -17,16 +17,16 @@ type DiscoveryPageProps = {
 };
 
 export async function DiscoveryPage({ citySlug, params }: DiscoveryPageProps) {
-  const city = getCityBySlug(citySlug);
+  const city = await getCityBySlug(citySlug);
   if (!city) {
     notFound();
   }
 
   const user = await getSessionUser();
-  const savedIds = user ? favouriteIdsFor(user.id) : new Set<number>();
+  const savedIds = user ? await favouriteIdsFor(user.id) : new Set<number>();
   const filters = parseFilters(params);
-  const activities = listActivities(city.slug, filters);
-  const total = countActivities(city.slug);
+  const activities = await listActivities(city.slug, filters);
+  const total = await countActivities(city.slug);
   const base = `/${city.slug}`;
 
   const search = new URLSearchParams(params);
@@ -34,7 +34,7 @@ export async function DiscoveryPage({ citySlug, params }: DiscoveryPageProps) {
   const query = search.toString();
   const saveNext = query ? `${base}?${query}` : base;
 
-  const venue = params.luogo ? getVenueBySlug(params.luogo) : null;
+  const venue = params.luogo ? await getVenueBySlug(params.luogo) : null;
 
   const selectedFromUrl = params.selezionata
     ? activities.find((activity) => activity.slug === params.selezionata)

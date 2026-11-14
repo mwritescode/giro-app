@@ -13,7 +13,7 @@ export default async function PreferitiPage() {
     redirect("/accedi?next=%2Fpreferiti");
   }
 
-  const favourites = listFavourites(user.id);
+  const favourites = await listFavourites(user.id);
 
   return (
     <>

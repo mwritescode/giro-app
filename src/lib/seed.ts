@@ -1,4 +1,4 @@
-import type { DatabaseSync } from "node:sqlite";
+import type { D1Database, D1PreparedStatement } from "./d1";
 import type { Category } from "./categories";
 
 type SeedCity = {
@@ -750,64 +750,79 @@ function addMinutes(time: string, minutes: number): string {
   return `${String(Math.floor(total / 60) % 24).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
 }
 
-export function seedDatabase(db: DatabaseSync): void {
-  const cityIds = new Map<string, number>();
-  for (const city of cities) {
-    const result = db
-      .prepare("INSERT INTO cities (slug, name, region, lat, lng, available) VALUES (?, ?, ?, ?, ?, ?)")
-      .run(city.slug, city.name, city.region, city.lat, city.lng, city.available ? 1 : 0);
-    cityIds.set(city.slug, Number(result.lastInsertRowid));
-  }
+export async function seedDatabase(db: D1Database): Promise<void> {
+  const statements: D1PreparedStatement[] = [];
 
-  const venueIds = new Map<string, number>();
-  for (const venue of venues) {
-    const result = db
-      .prepare("INSERT INTO venues (slug, name, address, city_id, lat, lng) VALUES (?, ?, ?, ?, ?, ?)")
-      .run(venue.slug, venue.name, venue.address, cityIds.get(venue.city)!, venue.lat, venue.lng);
-    venueIds.set(venue.slug, Number(result.lastInsertRowid));
-  }
+  cities.forEach((city, index) => {
+    statements.push(
+      db
+        .prepare("INSERT INTO cities (id, slug, name, region, lat, lng, available) VALUES (?, ?, ?, ?, ?, ?, ?)")
+        .bind(index + 1, city.slug, city.name, city.region, city.lat, city.lng, city.available ? 1 : 0),
+    );
+  });
+
+  const cityId = (slug: string) => cities.findIndex((city) => city.slug === slug) + 1;
+
+  venues.forEach((venue, index) => {
+    statements.push(
+      db
+        .prepare("INSERT INTO venues (id, slug, name, address, city_id, lat, lng) VALUES (?, ?, ?, ?, ?, ?, ?)")
+        .bind(index + 1, venue.slug, venue.name, venue.address, cityId(venue.city), venue.lat, venue.lng),
+    );
+  });
+
+  const venueId = (slug: string) => venues.findIndex((venue) => venue.slug === slug) + 1;
 
   const firstSaturday = nextSaturday(new Date());
-  const insertSession = db.prepare("INSERT INTO sessions (activity_id, starts_at, ends_at) VALUES (?, ?, ?)");
 
-  for (const activity of activities) {
-    const result = db
-      .prepare(
-        `INSERT INTO activities
-          (slug, title, venue_id, category, age_min, age_max, price_cents, duration_minutes,
-           summary, about_title, about_text, image, provider_url, before_you_go)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      )
-      .run(
-        activity.slug,
-        activity.title,
-        venueIds.get(activity.venue)!,
-        activity.category,
-        activity.ageMin,
-        activity.ageMax,
-        activity.priceCents,
-        activity.durationMinutes,
-        activity.summary,
-        activity.aboutTitle,
-        activity.aboutText,
-        activity.image,
-        activity.providerUrl,
-        activity.beforeYouGo,
-      );
-    const activityId = Number(result.lastInsertRowid);
+  activities.forEach((activity, index) => {
+    const activityId = index + 1;
+
+    statements.push(
+      db
+        .prepare(
+          `INSERT INTO activities
+            (id, slug, title, venue_id, category, age_min, age_max, price_cents, duration_minutes,
+             summary, about_title, about_text, image, provider_url, before_you_go)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        )
+        .bind(
+          activityId,
+          activity.slug,
+          activity.title,
+          venueId(activity.venue),
+          activity.category,
+          activity.ageMin,
+          activity.ageMax,
+          activity.priceCents,
+          activity.durationMinutes,
+          activity.summary,
+          activity.aboutTitle,
+          activity.aboutText,
+          activity.image,
+          activity.providerUrl,
+          activity.beforeYouGo,
+        ),
+    );
 
     for (let week = 0; week < 6; week += 1) {
-      for (const slot of activity.slots) {
+      activity.slots.forEach((slot, slotIndex) => {
         const day = new Date(firstSaturday);
         day.setDate(day.getDate() + week * 7);
-        const days = slot === activity.slots[0] ? 0 : week % 2 === 0 ? 1 : 0;
+        const days = slotIndex === 0 ? 0 : week % 2 === 0 ? 1 : 0;
         day.setDate(day.getDate() + days);
-        insertSession.run(
-          activityId,
-          `${isoDate(day)}T${slot}`,
-          `${isoDate(day)}T${addMinutes(slot, activity.durationMinutes)}`,
+
+        statements.push(
+          db
+            .prepare("INSERT INTO sessions (activity_id, starts_at, ends_at) VALUES (?, ?, ?)")
+            .bind(activityId, `${isoDate(day)}T${slot}`, `${isoDate(day)}T${addMinutes(slot, activity.durationMinutes)}`),
         );
-      }
+      });
     }
+  });
+
+  const CHUNK = 50;
+  for (let index = 0; index < statements.length; index += CHUNK) {
+    await db.batch(statements.slice(index, index + CHUNK));
   }
 }

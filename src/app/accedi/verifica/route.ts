@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   const requested = request.nextUrl.searchParams.get("next") ?? "/preferiti";
   const next = requested.startsWith("/") && !requested.startsWith("//") ? requested : "/preferiti";
 
-  const result = consumeLoginToken(token);
+  const result = await consumeLoginToken(token);
 
   if (!result.ok) {
     const url = new URL("/accedi/scaduto", request.url);

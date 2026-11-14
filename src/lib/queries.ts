@@ -1,4 +1,4 @@
-import { getDb } from "./db";
+import { getDb } from "./d1";
 import type { Category } from "./categories";
 import type { ActivityDetail, ActivitySession, ActivitySummary, City, Filters } from "./types";
 
@@ -76,25 +76,32 @@ function distanceKm(aLat: number, aLng: number, bLat: number, bLng: number): num
   return 2 * earthRadius * Math.asin(Math.sqrt(h));
 }
 
-export function listCities(): City[] {
-  const rows = getDb().prepare("SELECT * FROM cities ORDER BY available DESC, name").all() as CityRow[];
-  return rows.map(toCity);
+export async function listCities(): Promise<City[]> {
+  const db = await getDb();
+  const { results } = await db
+    .prepare("SELECT * FROM cities ORDER BY available DESC, name")
+    .all<CityRow>();
+  return results.map(toCity);
 }
 
-export function getCityBySlug(slug: string): City | null {
-  const row = getDb().prepare("SELECT * FROM cities WHERE slug = ?").get(slug) as CityRow | undefined;
+export async function getCityBySlug(slug: string): Promise<City | null> {
+  const db = await getDb();
+  const row = await db.prepare("SELECT * FROM cities WHERE slug = ?").bind(slug).first<CityRow>();
   return row ? toCity(row) : null;
 }
 
-export function findCities(query: string): City[] {
+export async function findCities(query: string): Promise<City[]> {
+  const db = await getDb();
   const term = `%${query.trim().toLowerCase()}%`;
-  const rows = getDb()
+  const { results } = await db
     .prepare("SELECT * FROM cities WHERE lower(name) LIKE ? OR lower(region) LIKE ? ORDER BY available DESC, name")
-    .all(term, term) as CityRow[];
-  return rows.map(toCity);
+    .bind(term, term)
+    .all<CityRow>();
+  return results.map(toCity);
 }
 
-export function listActivities(citySlug: string, filters: Filters): ActivitySummary[] {
+export async function listActivities(citySlug: string, filters: Filters): Promise<ActivitySummary[]> {
+  const db = await getDb();
   const now = new Date().toISOString().slice(0, 16);
   const clauses: string[] = ["c.slug = ?"];
   const params: (string | number)[] = [];
@@ -152,10 +159,10 @@ export function listActivities(citySlug: string, filters: Filters): ActivitySumm
     ORDER BY next_start IS NULL, next_start, a.title
   `;
 
-  let rows = getDb().prepare(sql).all(...params) as ActivityRow[];
-  rows = rows.filter((row) => row.next_start !== null);
+  const { results } = await db.prepare(sql).bind(...params).all<ActivityRow>();
+  let rows = results.filter((row) => row.next_start !== null);
 
-  const city = getCityBySlug(citySlug);
+  const city = await getCityBySlug(citySlug);
   if (city && filters.radiusKm) {
     rows = rows.filter((row) => distanceKm(city.lat, city.lng, row.venue_lat, row.venue_lng) <= filters.radiusKm!);
   }
@@ -163,20 +170,25 @@ export function listActivities(citySlug: string, filters: Filters): ActivitySumm
   return rows.map(toSummary);
 }
 
-export function countActivities(citySlug: string): number {
-  const row = getDb()
+export async function countActivities(citySlug: string): Promise<number> {
+  const db = await getDb();
+  const row = await db
     .prepare(
       `SELECT COUNT(*) AS count FROM activities a
        JOIN venues v ON v.id = a.venue_id
        JOIN cities c ON c.id = v.city_id
        WHERE c.slug = ?`,
     )
-    .get(citySlug) as { count: number };
-  return row.count;
+    .bind(citySlug)
+    .first<{ count: number }>();
+  return row?.count ?? 0;
 }
 
-export function getActivityBySlug(slug: string): ActivityDetail | null {
-  const row = getDb()
+export async function getActivityBySlug(slug: string): Promise<ActivityDetail | null> {
+  const db = await getDb();
+  const now = new Date().toISOString().slice(0, 16);
+
+  const row = await db
     .prepare(
       `SELECT a.*, v.name AS venue_name, v.address AS venue_address, v.lat AS venue_lat, v.lng AS venue_lng,
               c.name AS city_name, c.slug AS city_slug,
@@ -186,20 +198,22 @@ export function getActivityBySlug(slug: string): ActivityDetail | null {
        JOIN cities c ON c.id = v.city_id
        WHERE a.slug = ?`,
     )
-    .get(new Date().toISOString().slice(0, 16), slug) as (ActivityRow & {
-    about_title: string;
-    about_text: string;
-    provider_url: string;
-    before_you_go: string;
-  }) | undefined;
+    .bind(now, slug)
+    .first<ActivityRow & {
+      about_title: string;
+      about_text: string;
+      provider_url: string;
+      before_you_go: string;
+    }>();
 
   if (!row) {
     return null;
   }
 
-  const sessions = getDb()
+  const { results } = await db
     .prepare("SELECT starts_at, ends_at FROM sessions WHERE activity_id = ? AND starts_at >= ? ORDER BY starts_at LIMIT 8")
-    .all(row.id, new Date().toISOString().slice(0, 16)) as { starts_at: string; ends_at: string }[];
+    .bind(row.id, now)
+    .all<{ starts_at: string; ends_at: string }>();
 
   return {
     ...toSummary(row),
@@ -207,15 +221,16 @@ export function getActivityBySlug(slug: string): ActivityDetail | null {
     aboutText: row.about_text,
     providerUrl: row.provider_url,
     beforeYouGo: row.before_you_go,
-    sessions: sessions.map<ActivitySession>((session) => ({
+    sessions: results.map<ActivitySession>((session) => ({
       startsAt: session.starts_at,
       endsAt: session.ends_at,
     })),
   };
 }
 
-export function listFavourites(userId: number): ActivitySummary[] {
-  const rows = getDb()
+export async function listFavourites(userId: number): Promise<ActivitySummary[]> {
+  const db = await getDb();
+  const { results } = await db
     .prepare(
       `SELECT a.id, a.slug, a.title, a.category, a.age_min, a.age_max, a.price_cents,
               a.duration_minutes, a.summary, a.image,
@@ -229,35 +244,44 @@ export function listFavourites(userId: number): ActivitySummary[] {
        WHERE f.user_id = ?
        ORDER BY f.created_at DESC`,
     )
-    .all(new Date().toISOString().slice(0, 16), userId) as ActivityRow[];
-  return rows.map(toSummary);
+    .bind(new Date().toISOString().slice(0, 16), userId)
+    .all<ActivityRow>();
+  return results.map(toSummary);
 }
 
-export function favouriteIdsFor(userId: number): Set<number> {
-  const rows = getDb()
+export async function favouriteIdsFor(userId: number): Promise<Set<number>> {
+  const db = await getDb();
+  const { results } = await db
     .prepare("SELECT activity_id FROM favourites WHERE user_id = ?")
-    .all(userId) as { activity_id: number }[];
-  return new Set(rows.map((row) => row.activity_id));
+    .bind(userId)
+    .all<{ activity_id: number }>();
+  return new Set(results.map((row) => row.activity_id));
 }
 
-export function isFavourite(userId: number, activityId: number): boolean {
-  const row = getDb()
+export async function isFavourite(userId: number, activityId: number): Promise<boolean> {
+  const db = await getDb();
+  const row = await db
     .prepare("SELECT 1 AS present FROM favourites WHERE user_id = ? AND activity_id = ?")
-    .get(userId, activityId) as { present: number } | undefined;
+    .bind(userId, activityId)
+    .first<{ present: number }>();
   return Boolean(row);
 }
 
-export function toggleFavouriteRow(userId: number, activityId: number): boolean {
-  const db = getDb();
-  if (isFavourite(userId, activityId)) {
-    db.prepare("DELETE FROM favourites WHERE user_id = ? AND activity_id = ?").run(userId, activityId);
+export async function toggleFavouriteRow(userId: number, activityId: number): Promise<boolean> {
+  const db = await getDb();
+
+  if (await isFavourite(userId, activityId)) {
+    await db
+      .prepare("DELETE FROM favourites WHERE user_id = ? AND activity_id = ?")
+      .bind(userId, activityId)
+      .run();
     return false;
   }
-  db.prepare("INSERT INTO favourites (user_id, activity_id, created_at) VALUES (?, ?, ?)").run(
-    userId,
-    activityId,
-    new Date().toISOString(),
-  );
+
+  await db
+    .prepare("INSERT INTO favourites (user_id, activity_id, created_at) VALUES (?, ?, ?)")
+    .bind(userId, activityId, new Date().toISOString())
+    .run();
   return true;
 }
 
@@ -268,9 +292,10 @@ export type VenueResult = {
   cityName: string;
 };
 
-export function searchVenues(term: string, citySlug: string, limit: number): VenueResult[] {
+export async function searchVenues(term: string, citySlug: string, limit: number): Promise<VenueResult[]> {
+  const db = await getDb();
   const pattern = `%${term.trim().toLowerCase()}%`;
-  return getDb()
+  const { results } = await db
     .prepare(
       `SELECT v.slug, v.name, v.address, c.name AS city_name
        FROM venues v
@@ -279,16 +304,25 @@ export function searchVenues(term: string, citySlug: string, limit: number): Ven
        ORDER BY v.name
        LIMIT ?`,
     )
-    .all(citySlug, pattern, pattern, limit)
-    .map((row) => {
-      const typed = row as { slug: string; name: string; address: string; city_name: string };
-      return { slug: typed.slug, name: typed.name, address: typed.address, cityName: typed.city_name };
-    });
+    .bind(citySlug, pattern, pattern, limit)
+    .all<{ slug: string; name: string; address: string; city_name: string }>();
+
+  return results.map((row) => ({
+    slug: row.slug,
+    name: row.name,
+    address: row.address,
+    cityName: row.city_name,
+  }));
 }
 
-export function searchActivities(term: string, citySlug: string, limit: number | null): ActivitySummary[] {
+export async function searchActivities(
+  term: string,
+  citySlug: string,
+  limit: number | null,
+): Promise<ActivitySummary[]> {
+  const db = await getDb();
   const pattern = `%${term.trim().toLowerCase()}%`;
-  const rows = getDb()
+  const { results } = await db
     .prepare(
       `SELECT a.id, a.slug, a.title, a.category, a.age_min, a.age_max, a.price_cents,
               a.duration_minutes, a.summary, a.image,
@@ -303,19 +337,25 @@ export function searchActivities(term: string, citySlug: string, limit: number |
        ORDER BY a.title
        LIMIT ?`,
     )
-    .all(new Date().toISOString().slice(0, 16), citySlug, pattern, pattern, pattern, limit ?? -1) as ActivityRow[];
-  return rows.map(toSummary);
+    .bind(new Date().toISOString().slice(0, 16), citySlug, pattern, pattern, pattern, limit ?? -1)
+    .all<ActivityRow>();
+
+  return results.map(toSummary);
 }
 
-export function getVenueBySlug(slug: string): { slug: string; name: string; address: string; citySlug: string } | null {
-  const row = getDb()
+export async function getVenueBySlug(
+  slug: string,
+): Promise<{ slug: string; name: string; address: string; citySlug: string } | null> {
+  const db = await getDb();
+  const row = await db
     .prepare(
       `SELECT v.slug, v.name, v.address, c.slug AS city_slug
        FROM venues v
        JOIN cities c ON c.id = v.city_id
        WHERE v.slug = ?`,
     )
-    .get(slug) as { slug: string; name: string; address: string; city_slug: string } | undefined;
+    .bind(slug)
+    .first<{ slug: string; name: string; address: string; city_slug: string }>();
 
   return row ? { slug: row.slug, name: row.name, address: row.address, citySlug: row.city_slug } : null;
 }

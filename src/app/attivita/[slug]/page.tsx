@@ -20,7 +20,7 @@ type PageProps = {
 
 export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params;
-  const activity = getActivityBySlug(slug);
+  const activity = await getActivityBySlug(slug);
   if (!activity) {
     return { title: "Attività non trovata" };
   }
@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function ActivityPage({ params }: PageProps) {
   const { slug } = await params;
-  const activity = getActivityBySlug(slug);
+  const activity = await getActivityBySlug(slug);
 
   if (!activity) {
     notFound();
@@ -48,7 +48,7 @@ export default async function ActivityPage({ params }: PageProps) {
 
   const firstSession = activity.sessions[0] ?? null;
   const user = await getSessionUser();
-  const saved = user ? isFavourite(user.id, activity.id) : false;
+  const saved = user ? await isFavourite(user.id, activity.id) : false;
 
   return (
     <>

@@ -12,13 +12,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json<SearchPayload>({ venues: [], activities: [], categories: [] });
   }
 
-  const venues = searchVenues(query, citySlug, 4).map((venue) => ({
+  const venues = (await searchVenues(query, citySlug, 4)).map((venue) => ({
     slug: venue.slug,
     name: venue.name,
     address: venue.address,
   }));
 
-  const activities = searchActivities(query, citySlug, 5).map((activity) => ({
+  const activities = (await searchActivities(query, citySlug, 5)).map((activity) => ({
     slug: activity.slug,
     title: activity.title,
     venueName: activity.venueName,

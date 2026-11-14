@@ -21,21 +21,21 @@ export const metadata: Metadata = {
 export default async function CercaPage({ searchParams }: { searchParams: Promise<RawParams> }) {
   const params = normalizeParams(await searchParams);
   const query = (params.q ?? "").trim();
-  const city = getCityBySlug(params.citta ?? "firenze") ?? getCityBySlug("firenze")!;
+  const city = (await getCityBySlug(params.citta ?? "firenze")) ?? (await getCityBySlug("firenze"))!;
   const showAll = params.tutti === "1";
   const hasQuery = query.length >= 2;
 
   const user = await getSessionUser();
-  const savedIds = user ? favouriteIdsFor(user.id) : new Set<number>();
+  const savedIds = user ? await favouriteIdsFor(user.id) : new Set<number>();
 
   const payload: SearchPayload = hasQuery
     ? {
-        venues: searchVenues(query, city.slug, VENUE_LIMIT).map((venue) => ({
+        venues: (await searchVenues(query, city.slug, VENUE_LIMIT)).map((venue) => ({
           slug: venue.slug,
           name: venue.name,
           address: venue.address,
         })),
-        activities: searchActivities(query, city.slug, ACTIVITY_LIMIT).map((activity) => ({
+        activities: (await searchActivities(query, city.slug, ACTIVITY_LIMIT)).map((activity) => ({
           slug: activity.slug,
           title: activity.title,
           venueName: activity.venueName,
@@ -47,7 +47,7 @@ export default async function CercaPage({ searchParams }: { searchParams: Promis
       }
     : EMPTY_PAYLOAD;
 
-  const allActivities = showAll && hasQuery ? searchActivities(query, city.slug, null) : [];
+  const allActivities = showAll && hasQuery ? await searchActivities(query, city.slug, null) : [];
 
   return (
     <>

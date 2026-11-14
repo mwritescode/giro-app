@@ -29,7 +29,7 @@ export async function requestLogin(formData: FormData): Promise<void> {
     redirect(`/accedi?errore=email&next=${encodeURIComponent(next)}`);
   }
 
-  const token = createLoginToken(email);
+  const token = await createLoginToken(email);
   const base = await currentBaseUrl();
   const url = `${base}/accedi/verifica?token=${token}&next=${encodeURIComponent(next)}`;
   await sendLoginEmail({ to: email, url });
@@ -52,7 +52,7 @@ export async function toggleFavourite(formData: FormData): Promise<void> {
 
   const activityId = Number(formData.get("activityId"));
   if (Number.isFinite(activityId) && activityId > 0) {
-    toggleFavouriteRow(user.id, activityId);
+    await toggleFavouriteRow(user.id, activityId);
   }
 
   redirect(next);
@@ -68,7 +68,7 @@ export async function deleteAccount(formData: FormData): Promise<void> {
   const requested = String(formData.get("ritorno") ?? "");
   const back = requested === "/milano" || requested === "/firenze" ? requested : "/firenze";
 
-  deleteUser(user.id, user.email);
+  await deleteUser(user.id, user.email);
   await endSession();
   redirect(`${back}?eliminato=1`);
 }
