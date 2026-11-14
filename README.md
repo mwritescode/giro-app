@@ -44,11 +44,17 @@ the link is printed to the terminal running `pnpm dev`.
 
 Links expire after 15 minutes and work once.
 
-Without a mailer key the link is printed to the terminal. To send real email,
-set `RESEND_API_KEY` (and optionally `RESEND_FROM`) in `.dev.vars` locally, or as
-a Worker secret in production. `sendLoginEmail` in `src/lib/mailer.ts` uses Resend
-when the key is present and falls back to the console otherwise. Set `APP_URL` if
-links should point somewhere other than the request host.
+Without a mailer key the link is printed to the terminal. Two backends are
+supported in `src/lib/mailer.ts`:
+
+- `BREVO_API_KEY` — Brevo, which verifies a sender address rather than a domain,
+  so it works without owning one (free plan: 300 emails/day). Set `BREVO_SENDER`
+  to the verified address.
+- `RESEND_API_KEY` — Resend. It can only reach arbitrary recipients once a
+  sending domain is verified; set `RESEND_FROM` accordingly.
+
+Set whichever key in `.dev.vars` locally, or as a Worker secret in production.
+Set `APP_URL` if links should point somewhere other than the request host.
 
 ### The map worker
 
@@ -113,8 +119,8 @@ anything beyond a demo. Photos are placeholder assets from the design file.
 ## Deploying
 
 `pnpm deploy` builds for Workers and pushes to Cloudflare. It needs a Cloudflare
-account and `wrangler login` once, plus a real D1 database id in `wrangler.jsonc`
-(the placeholder there is for local development). Magic links also need a real
+account and `wrangler login` once. The production Worker runs at
+`giro.mwritescode.dev` with its own D1 database, configured in `wrangler.jsonc`. Magic links also need a real
 sender: swap the console implementation in `src/lib/mailer.ts` for a provider
 such as Resend, and set `APP_URL` to the deployed origin.
 

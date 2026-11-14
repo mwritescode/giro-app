@@ -14,11 +14,21 @@
       "service": "giro"
     }
   ],
+  "routes": [
+    {
+      "pattern": "giro.mwritescode.dev",
+      "custom_domain": true
+    }
+  ],
+  "vars": {
+    "APP_URL": "https://giro.mwritescode.dev",
+    "RESEND_FROM": "Giro <giro@mwritescode.dev>"
+  },
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "giro",
-      "database_id": "00000000-0000-0000-0000-000000000000"
+      "database_id": "4b88f654-09b3-484e-841b-b2b2547da752"
     }
   ]
 }
