@@ -1696,3 +1696,356 @@ p {
   white-space: nowrap;
   border: 0;
 }
+
+/* ---------- come funziona ---------- */
+
+.how-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+.mobile-breadcrumb {
+  display: none;
+}
+
+.how-hero {
+  display: grid;
+  grid-template-columns: 1fr 530px;
+  gap: 70px;
+  align-items: center;
+  padding: 56px 0 52px;
+}
+
+.how-hero-copy h1 {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  margin-bottom: 20px;
+}
+
+.how-hero-copy h2 {
+  font-size: 43px;
+  line-height: 1.1;
+  letter-spacing: -1.6px;
+  font-weight: 700;
+  margin-bottom: 22px;
+}
+
+.how-hero-copy p {
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--color-muted);
+  max-width: 490px;
+}
+
+.how-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-primary);
+  color: #fff;
+  height: 47px;
+  padding: 0 21px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 9px;
+  margin-top: 28px;
+}
+
+.how-hero-photo {
+  width: 100%;
+  height: 348px;
+  object-fit: cover;
+  border-radius: var(--radius-card);
+}
+
+.how-steps {
+  border-top: 1px solid var(--color-line);
+  padding: 35px 0 38px;
+}
+
+.how-steps > h2,
+.how-answers > h2 {
+  font-size: 24px;
+  letter-spacing: -0.65px;
+  line-height: 1.25;
+}
+
+.how-step-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 42px;
+  margin-top: 28px;
+}
+
+.how-step-number {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary);
+  margin-bottom: 14px;
+}
+
+.how-step h3 {
+  font-size: 19px;
+  letter-spacing: -0.45px;
+  line-height: 1.3;
+  margin-bottom: 12px;
+}
+
+.how-step p {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--color-muted);
+}
+
+.how-answers {
+  padding: 31px 0 34px;
+  border-top: 1px solid var(--color-line);
+}
+
+.how-answer-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 42px;
+  margin-top: 23px;
+}
+
+.how-answer-grid h3 {
+  font-size: 15px;
+  line-height: 1.4;
+  letter-spacing: -0.2px;
+  margin-bottom: 9px;
+}
+
+.how-answer-grid p {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--color-muted);
+}
+
+.how-start {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+  padding: 29px 32px;
+  background: var(--color-primary-soft);
+  border-radius: var(--radius-card);
+}
+
+.how-start h2 {
+  font-size: 22px;
+  letter-spacing: -0.65px;
+}
+
+.how-start p {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-muted);
+  margin-top: 9px;
+}
+
+.how-city-actions {
+  display: flex;
+  gap: 11px;
+}
+
+.how-city-actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 27px;
+  background: var(--color-surface);
+  border: 1px solid #d6dfff;
+  height: 44px;
+  padding: 0 20px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary);
+  white-space: nowrap;
+}
+
+.how-footer {
+  max-width: 1200px;
+  margin: 23px auto 0;
+  padding: 0 40px;
+  height: 94px;
+  display: flex;
+  align-items: center;
+  gap: 27px;
+  border-top: 1px solid var(--color-line);
+  font-size: 11px;
+  color: var(--color-muted);
+}
+
+.footer-brand {
+  font-size: 26px;
+  letter-spacing: -1.8px;
+  font-weight: 800;
+  color: var(--color-primary);
+  margin-right: auto;
+}
+
+.footer-brand > span {
+  color: #ff805b;
+}
+
+@media (max-width: 1080px) {
+  .how-hero {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    padding: 40px 0 36px;
+  }
+
+  .how-hero-photo {
+    height: 280px;
+  }
+}
+
+@media (max-width: 720px) {
+  .how-main,
+  .how-footer {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .mobile-breadcrumb {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding-top: 20px;
+    font-size: 13px;
+    color: var(--color-muted);
+  }
+
+  .how-hero {
+    gap: 24px;
+    padding: 24px 0 28px;
+  }
+
+  .how-hero-copy h1 {
+    font-size: 14px;
+    margin-bottom: 15px;
+  }
+
+  .how-hero-copy h2 {
+    font-size: 31px;
+    line-height: 1.12;
+    letter-spacing: -1.05px;
+    margin-bottom: 16px;
+  }
+
+  .how-hero-copy p {
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  .how-hero-photo {
+    height: 193px;
+    border-radius: 14px;
+  }
+
+  .how-steps {
+    padding: 26px 0 25px;
+  }
+
+  .how-steps > h2 {
+    font-size: 22px;
+    letter-spacing: -0.6px;
+    line-height: 1.2;
+    max-width: 300px;
+  }
+
+  .how-step-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 23px;
+    margin-top: 25px;
+  }
+
+  .how-step {
+    display: flex;
+    gap: 15px;
+  }
+
+  .how-step-number {
+    font-size: 12px;
+    margin: 3px 0 0;
+    min-width: 20px;
+  }
+
+  .how-step h3 {
+    font-size: 16px;
+    letter-spacing: -0.3px;
+    margin-bottom: 7px;
+  }
+
+  .how-step p {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .how-answers {
+    padding: 25px 0 27px;
+  }
+
+  .how-answers > h2 {
+    font-size: 21px;
+  }
+
+  .how-answer-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 22px;
+  }
+
+  .how-answer-grid h3 {
+    font-size: 14px;
+    margin-bottom: 6px;
+  }
+
+  .how-answer-grid p {
+    font-size: 12px;
+    line-height: 1.65;
+  }
+
+  .how-start {
+    display: block;
+    padding: 23px 20px;
+  }
+
+  .how-start h2 {
+    font-size: 21px;
+    line-height: 1.2;
+    letter-spacing: -0.5px;
+    max-width: 260px;
+  }
+
+  .how-start p {
+    font-size: 12px;
+    margin-top: 11px;
+  }
+
+  .how-city-actions {
+    margin-top: 20px;
+    gap: 10px;
+  }
+
+  .how-city-actions a {
+    flex: 1;
+    padding: 0 14px;
+    gap: 12px;
+    font-size: 13px;
+  }
+
+  .how-footer {
+    height: 77px;
+    margin-top: 22px;
+    gap: 19px;
+    font-size: 10px;
+  }
+}

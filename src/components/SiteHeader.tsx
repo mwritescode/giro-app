@@ -3,7 +3,7 @@ import { Heart } from "lucide-react";
 import { AccountMenu } from "./AccountMenu";
 
 type SiteHeaderProps = {
-  active?: "esplora" | "preferiti";
+  active?: "esplora" | "preferiti" | "come-funziona";
   user?: { email: string } | null;
 };
 
@@ -18,7 +18,9 @@ export function SiteHeader({ active = "esplora", user = null }: SiteHeaderProps)
         <Link href="/" className={active === "esplora" ? "is-active" : undefined}>
           Esplora
         </Link>
-        <Link href="/come-funziona">Come funziona</Link>
+        <Link href="/come-funziona" className={active === "come-funziona" ? "is-active" : undefined}>
+          Come funziona
+        </Link>
       </nav>
 
       <div className="header-right">
