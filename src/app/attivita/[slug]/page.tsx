@@ -57,7 +57,8 @@ export default async function ActivityPage({ params }: PageProps) {
       <main className="detail-main">
         <div className="detail-back">
           <Link href={`/${activity.citySlug}`}>
-            <ArrowLeft size={16} /> Torna alle esperienze a {activity.cityName}
+            <ArrowLeft size={16} />{" "}
+            <span className="detail-back-label">Torna alle esperienze a {activity.cityName}</span>
           </Link>
           <div className="detail-actions">
             <ShareButton title={activity.title} text={activity.summary} withLabel />

@@ -468,6 +468,7 @@ p {
   background: var(--color-surface);
   padding: 10px 16px;
   font-size: 14px;
+  white-space: nowrap;
   box-shadow: var(--shadow-panel);
 }
 
@@ -507,7 +508,7 @@ p {
   position: absolute;
   left: 16px;
   right: 16px;
-  bottom: 16px;
+  bottom: 22px;
   display: flex;
   gap: 14px;
   background: var(--color-surface);
@@ -591,12 +592,14 @@ p {
 
 .map-attribution {
   position: absolute;
-  right: 10px;
-  bottom: 6px;
-  font-size: 10px;
+  right: 8px;
+  bottom: 4px;
+  z-index: 2;
+  font-size: 9px;
+  line-height: 1.4;
   color: var(--color-muted);
-  background: #ffffffcc;
-  padding: 2px 6px;
+  background: #ffffffd9;
+  padding: 1px 5px;
   border-radius: 4px;
 }
 
@@ -2301,5 +2304,80 @@ p {
 
   .prose .lede {
     font-size: 15px;
+  }
+}
+
+/* ---------- mobile refinements ---------- */
+
+@media (max-width: 720px) {
+  .filter-chip--price,
+  .filter-chip--interests,
+  .filter-chip-label {
+    display: none;
+  }
+
+  .filter-bar {
+    gap: 8px;
+    padding-bottom: 14px;
+  }
+
+  .map-location-label {
+    display: none;
+  }
+
+  .selected-preview {
+    left: 10px;
+    right: 10px;
+    bottom: 24px;
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .selected-preview-photo {
+    width: 64px;
+    height: 64px;
+    border-radius: 10px;
+  }
+
+  .selected-preview-content h3 {
+    font-size: 15px;
+  }
+
+  .selected-preview-content p,
+  .selected-preview-content span {
+    font-size: 12px;
+  }
+
+  .preview-cta {
+    padding: 7px 12px;
+    font-size: 13px;
+  }
+
+  .maplibregl-ctrl-bottom-right {
+    bottom: 2px;
+  }
+
+  .price-pin {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+
+  .detail-back-label {
+    display: none;
+  }
+
+  .search-location {
+    margin: 12px 0 16px;
+  }
+
+  .search-area {
+    top: 12px;
+    font-size: 13px;
+    padding: 9px 14px;
+  }
+
+  .map-tools {
+    top: 12px;
+    right: 12px;
   }
 }

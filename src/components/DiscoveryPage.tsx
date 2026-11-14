@@ -117,17 +117,17 @@ export async function DiscoveryPage({ citySlug, params }: DiscoveryPageProps) {
               ? buildHref(base, params, { gratis: null, prezzo: null })
               : buildHref(base, params, { gratis: "1" })
           }
-          className={`filter-chip${filters.freeOnly || filters.maxPriceCents !== null ? " is-active" : ""}`}
+          className={`filter-chip filter-chip--price${filters.freeOnly || filters.maxPriceCents !== null ? " is-active" : ""}`}
         >
           {priceLabel} {filters.freeOnly || filters.maxPriceCents !== null ? <X size={13} /> : <ChevronDown size={13} />}
         </Link>
 
-        <Link href={buildHref(base, params, { pannello: "1" })} className="filter-chip">
+        <Link href={buildHref(base, params, { pannello: "1" })} className="filter-chip filter-chip--interests">
           Cosa gli piace? <ChevronDown size={13} />
         </Link>
 
         <Link href={buildHref(base, params, { pannello: "1" })} className="filter-chip is-plain">
-          <SlidersHorizontal size={15} /> Tutti i filtri
+          <SlidersHorizontal size={15} /> <span className="filter-chip-label">Tutti i filtri</span>
         </Link>
 
         <p className="filter-note">Un weekend, infinite curiosità.</p>

@@ -65,7 +65,7 @@ export function CityMap({
         style: STYLE_URL,
         center: [city.lng, city.lat],
         zoom: DEFAULT_ZOOM,
-        attributionControl: { compact: true },
+        attributionControl: false,
       });
 
       mapRef.current = map;
@@ -139,6 +139,8 @@ export function CityMap({
           <Search size={16} /> Cerca in quest&apos;area
         </button>
       )}
+
+      <p className="map-attribution">© OpenFreeMap · OpenMapTiles · OpenStreetMap</p>
 
       <div aria-live="polite">
         {selected ? (

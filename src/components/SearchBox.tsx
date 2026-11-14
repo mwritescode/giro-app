@@ -12,6 +12,7 @@ type SearchBoxProps = {
   initialPayload?: SearchPayload;
   variant?: "overlay" | "page";
   autoOpen?: boolean;
+  children?: React.ReactNode;
 };
 
 const DEBOUNCE_MS = 200;
@@ -23,6 +24,7 @@ export function SearchBox({
   initialPayload = EMPTY_PAYLOAD,
   variant = "overlay",
   autoOpen = true,
+  children,
 }: SearchBoxProps) {
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -154,6 +156,8 @@ export function SearchBox({
           />
         </div>
       </form>
+
+      {children}
 
       {showPanel ? (
         <div className="search-box-panel" id="search-results">

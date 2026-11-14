@@ -60,11 +60,11 @@ export default async function CercaPage({ searchParams }: { searchParams: Promis
           initialPayload={payload}
           variant="page"
           autoOpen={!showAll}
-        />
-
-        <p className="search-location">
-          <MapPin size={14} /> {city.name} e dintorni · <Link href="/scegli-citta">Cambia</Link>
-        </p>
+        >
+          <p className="search-location">
+            <MapPin size={14} /> {city.name} e dintorni · <Link href="/scegli-citta">Cambia</Link>
+          </p>
+        </SearchBox>
 
         {showAll ? (
           <section className="search-section">
