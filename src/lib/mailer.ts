@@ -20,7 +20,7 @@ function envValue(name: string): string | undefined {
   }
 }
 
-function body(url: string): { html: string; text: string } {
+function content(url: string): { html: string; text: string } {
   return {
     html: `
       <div style="font-family:Arial,Helvetica,sans-serif;color:#17243d;line-height:1.6">
@@ -41,35 +41,58 @@ function body(url: string): { html: string; text: string } {
   };
 }
 
-export async function sendLoginEmail({ to, url }: LoginEmail): Promise<void> {
-  const apiKey = envValue("RESEND_API_KEY");
+const SUBJECT = "Il tuo link di accesso a Giro";
 
-  if (!apiKey) {
-    console.log(
-      ["", "── giro. · link di accesso (solo sviluppo) ──", `A: ${to}`, url, ""].join("\n"),
-    );
-    return;
-  }
-
+async function sendWithResend(apiKey: string, to: string, url: string): Promise<void> {
   const from = envValue("RESEND_FROM") ?? "Giro <onboarding@resend.dev>";
-  const { html, text } = body(url);
+  const { html, text } = content(url);
 
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from,
-      to,
-      subject: "Il tuo link di accesso a Giro",
-      html,
-      text,
-    }),
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ from, to, subject: SUBJECT, html, text }),
   });
 
   if (!response.ok) {
     throw new Error(`Resend ha risposto ${response.status}: ${await response.text()}`);
   }
+}
+
+async function sendWithBrevo(apiKey: string, to: string, url: string): Promise<void> {
+  const senderEmail = envValue("BREVO_SENDER") ?? "martina.rossini704@gmail.com";
+  const { html, text } = content(url);
+
+  const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: { "api-key": apiKey, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      sender: { email: senderEmail, name: "Giro" },
+      to: [{ email: to }],
+      subject: SUBJECT,
+      htmlContent: html,
+      textContent: text,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Brevo ha risposto ${response.status}: ${await response.text()}`);
+  }
+}
+
+export async function sendLoginEmail({ to, url }: LoginEmail): Promise<void> {
+  const resendKey = envValue("RESEND_API_KEY");
+  if (resendKey) {
+    await sendWithResend(resendKey, to, url);
+    return;
+  }
+
+  const brevoKey = envValue("BREVO_API_KEY");
+  if (brevoKey) {
+    await sendWithBrevo(brevoKey, to, url);
+    return;
+  }
+
+  console.log(
+    ["", "── giro. · link di accesso (solo sviluppo) ──", `A: ${to}`, url, ""].join("\n"),
+  );
 }

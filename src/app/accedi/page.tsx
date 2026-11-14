@@ -32,6 +32,12 @@ export default async function AccediPage({ searchParams }: { searchParams: Promi
           <p className="form-error">Inserisci un indirizzo email valido.</p>
         ) : null}
 
+        {params.errore === "invio" ? (
+          <p className="form-error">
+            Non siamo riusciti a inviare il link. Controlla l&apos;indirizzo e riprova.
+          </p>
+        ) : null}
+
         <form action={requestLogin} className="auth-form">
           <input type="hidden" name="next" value={next} />
           <label htmlFor="email">La tua email</label>

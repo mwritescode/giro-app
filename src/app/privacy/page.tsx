@@ -76,7 +76,7 @@ export default async function PrivacyPage() {
             <strong>Cloudflare</strong> — hosting e database.
           </li>
           <li>
-            <strong>Resend</strong> — invio delle email con i link di accesso.
+            <strong>Brevo</strong> — invio delle email con i link di accesso.
           </li>
           <li>
             <strong>OpenFreeMap</strong> — mappe: riceve l&apos;indirizzo IP quando carichi una
