@@ -255,3 +255,49 @@ export function toggleFavouriteRow(userId: number, activityId: number): boolean 
   );
   return true;
 }
+
+export type VenueResult = {
+  slug: string;
+  name: string;
+  address: string;
+  cityName: string;
+};
+
+export function searchVenues(term: string, citySlug: string, limit: number): VenueResult[] {
+  const pattern = `%${term.trim().toLowerCase()}%`;
+  return getDb()
+    .prepare(
+      `SELECT v.slug, v.name, v.address, c.name AS city_name
+       FROM venues v
+       JOIN cities c ON c.id = v.city_id
+       WHERE c.slug = ? AND (lower(v.name) LIKE ? OR lower(v.address) LIKE ?)
+       ORDER BY v.name
+       LIMIT ?`,
+    )
+    .all(citySlug, pattern, pattern, limit)
+    .map((row) => {
+      const typed = row as { slug: string; name: string; address: string; city_name: string };
+      return { slug: typed.slug, name: typed.name, address: typed.address, cityName: typed.city_name };
+    });
+}
+
+export function searchActivities(term: string, citySlug: string, limit: number | null): ActivitySummary[] {
+  const pattern = `%${term.trim().toLowerCase()}%`;
+  const rows = getDb()
+    .prepare(
+      `SELECT a.id, a.slug, a.title, a.category, a.age_min, a.age_max, a.price_cents,
+              a.duration_minutes, a.summary, a.image,
+              v.name AS venue_name, v.address AS venue_address, v.lat AS venue_lat, v.lng AS venue_lng,
+              c.name AS city_name, c.slug AS city_slug,
+              (SELECT MIN(s.starts_at) FROM sessions s WHERE s.activity_id = a.id AND s.starts_at >= ?) AS next_start
+       FROM activities a
+       JOIN venues v ON v.id = a.venue_id
+       JOIN cities c ON c.id = v.city_id
+       WHERE c.slug = ?
+         AND (lower(a.title) LIKE ? OR lower(a.summary) LIKE ? OR lower(v.name) LIKE ?)
+       ORDER BY a.title
+       LIMIT ?`,
+    )
+    .all(new Date().toISOString().slice(0, 16), citySlug, pattern, pattern, pattern, limit ?? -1) as ActivityRow[];
+  return rows.map(toSummary);
+}

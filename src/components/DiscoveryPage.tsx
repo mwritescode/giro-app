@@ -55,15 +55,19 @@ export async function DiscoveryPage({ citySlug, params }: DiscoveryPageProps) {
           <h1>Fuori casa. Dentro la meraviglia.</h1>
           <p>Esperienze da vivere, cose nuove da imparare. Insieme.</p>
         </div>
-        <Link href="/scegli-citta" className="location-search">
-          <MapPin size={19} />
-          <span>
-            {city.name} <small>· entro {filters.radiusKm} km</small>
-          </span>
-          <ChevronDown size={17} />
+        <div className="location-search">
+          <Link href="/scegli-citta" className="location-search-location">
+            <MapPin size={19} />
+            <span>
+              {city.name} <small>· entro {filters.radiusKm} km</small>
+            </span>
+            <ChevronDown size={17} />
+          </Link>
           <span className="search-divider" />
-          <Search size={19} />
-        </Link>
+          <Link href={`/cerca?citta=${city.slug}`} aria-label="Cerca" className="location-search-submit">
+            <Search size={19} />
+          </Link>
+        </div>
       </section>
 
       <section className="filter-bar">
