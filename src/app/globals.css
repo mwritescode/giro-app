@@ -1637,3 +1637,62 @@ p {
     display: none;
   }
 }
+
+/* ---------- share ---------- */
+
+.results-tools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.share-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+  color: var(--color-muted);
+}
+
+.share-button:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.detail-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.detail-share {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  padding: 8px 14px;
+  font-size: 14px;
+}
+
+.detail-share:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}

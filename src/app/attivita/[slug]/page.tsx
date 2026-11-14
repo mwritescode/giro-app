@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowUpRight, CalendarDays, Clock3, MapPin, Users } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SaveButton } from "@/components/SaveButton";
+import { ShareButton } from "@/components/ShareButton";
 import { formatAges, formatDayLong, formatDuration, formatPrice, formatTime } from "@/lib/format";
 import { getActivityBySlug, isFavourite } from "@/lib/queries";
 import { getSessionUser } from "@/lib/auth";
@@ -21,15 +22,18 @@ export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params;
   const activity = getActivityBySlug(slug);
   if (!activity) {
-    return { title: "Attività non trovata — giro." };
+    return { title: "Attività non trovata" };
   }
   return {
-    title: `${activity.title} — giro.`,
+    title: activity.title,
     description: activity.summary,
+    alternates: { canonical: `/attivita/${activity.slug}` },
     openGraph: {
+      type: "article",
       title: activity.title,
       description: activity.summary,
-      images: [`/images/${activity.image}.png`],
+      url: `/attivita/${activity.slug}`,
+      images: [{ url: `/images/${activity.image}.png`, alt: activity.title }],
     },
   };
 }
@@ -55,12 +59,15 @@ export default async function ActivityPage({ params }: PageProps) {
           <Link href={`/${activity.citySlug}`}>
             <ArrowLeft size={16} /> Torna alle esperienze a {activity.cityName}
           </Link>
-          <SaveButton
-            activityId={activity.id}
-            saved={saved}
-            next={`/attivita/${activity.slug}`}
-            withLabel
-          />
+          <div className="detail-actions">
+            <ShareButton title={activity.title} text={activity.summary} withLabel />
+            <SaveButton
+              activityId={activity.id}
+              saved={saved}
+              next={`/attivita/${activity.slug}`}
+              withLabel
+            />
+          </div>
         </div>
 
         <div className="activity-hero">

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { ActivityCard } from "./ActivityCard";
+import { ShareButton } from "./ShareButton";
 import { CityMap, type MapBounds } from "./CityMap";
 import type { ActivitySummary, City } from "@/lib/types";
 
@@ -64,7 +65,10 @@ export function DiscoveryWorkspace({
                 : `${visible.length} di ${total} esperienze`}
             </p>
           </div>
-          <span className="results-count">{visible.length}</span>
+          <div className="results-tools">
+            <span className="results-count">{visible.length}</span>
+            <ShareButton title={`Esperienze a ${city.name}`} />
+          </div>
         </div>
 
         {activities.length === 0 ? (

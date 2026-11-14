@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { MapPin } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -11,6 +12,11 @@ import { EMPTY_PAYLOAD, type SearchPayload } from "@/lib/search";
 
 const VENUE_LIMIT = 4;
 const ACTIVITY_LIMIT = 5;
+
+export const metadata: Metadata = {
+  title: "Cerca",
+  robots: { index: false, follow: false },
+};
 
 export default async function CercaPage({ searchParams }: { searchParams: Promise<RawParams> }) {
   const params = normalizeParams(await searchParams);
