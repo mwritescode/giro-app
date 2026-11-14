@@ -50,4 +50,5 @@ export type Filters = {
   freeOnly: boolean;
   categories: Category[];
   radiusKm: number | null;
+  venueSlug: string | null;
 };

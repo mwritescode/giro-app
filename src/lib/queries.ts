@@ -122,6 +122,11 @@ export function listActivities(citySlug: string, filters: Filters): ActivitySumm
     params.push(...filters.categories);
   }
 
+  if (filters.venueSlug) {
+    clauses.push("v.slug = ?");
+    params.push(filters.venueSlug);
+  }
+
   if (filters.ages.length) {
     clauses.push("a.age_min <= ? AND a.age_max >= ?");
     params.push(Math.max(...filters.ages), Math.min(...filters.ages));
@@ -300,4 +305,17 @@ export function searchActivities(term: string, citySlug: string, limit: number |
     )
     .all(new Date().toISOString().slice(0, 16), citySlug, pattern, pattern, pattern, limit ?? -1) as ActivityRow[];
   return rows.map(toSummary);
+}
+
+export function getVenueBySlug(slug: string): { slug: string; name: string; address: string; citySlug: string } | null {
+  const row = getDb()
+    .prepare(
+      `SELECT v.slug, v.name, v.address, c.slug AS city_slug
+       FROM venues v
+       JOIN cities c ON c.id = v.city_id
+       WHERE v.slug = ?`,
+    )
+    .get(slug) as { slug: string; name: string; address: string; city_slug: string } | undefined;
+
+  return row ? { slug: row.slug, name: row.name, address: row.address, citySlug: row.city_slug } : null;
 }

@@ -40,6 +40,7 @@ export function parseFilters(params: Record<string, string>): Filters {
     freeOnly: params.gratis === "1",
     categories,
     radiusKm: params.raggio ? Number(params.raggio) : 10,
+    venueSlug: params.luogo ?? null,
   };
 }
 

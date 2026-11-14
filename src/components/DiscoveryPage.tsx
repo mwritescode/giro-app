@@ -2,11 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CalendarDays, ChevronDown, MapPin, Search, SlidersHorizontal, X } from "lucide-react";
 import { DiscoveryWorkspace } from "./DiscoveryWorkspace";
+import { SearchBox } from "./SearchBox";
 import { FilterPanel } from "./FilterPanel";
 import { SiteHeader } from "./SiteHeader";
 import { formatAges, formatDateRange } from "@/lib/format";
 import { buildHref, parseFilters } from "@/lib/params";
-import { countActivities, favouriteIdsFor, getCityBySlug, listActivities } from "@/lib/queries";
+import { countActivities, favouriteIdsFor, getCityBySlug, getVenueBySlug, listActivities } from "@/lib/queries";
 import { getSessionUser } from "@/lib/auth";
 
 type DiscoveryPageProps = {
@@ -32,6 +33,8 @@ export async function DiscoveryPage({ citySlug, params }: DiscoveryPageProps) {
   const query = search.toString();
   const saveNext = query ? `${base}?${query}` : base;
 
+  const venue = params.luogo ? getVenueBySlug(params.luogo) : null;
+
   const selectedFromUrl = params.selezionata
     ? activities.find((activity) => activity.slug === params.selezionata)
     : undefined;
@@ -55,22 +58,34 @@ export async function DiscoveryPage({ citySlug, params }: DiscoveryPageProps) {
           <h1>Fuori casa. Dentro la meraviglia.</h1>
           <p>Esperienze da vivere, cose nuove da imparare. Insieme.</p>
         </div>
-        <div className="location-search">
-          <Link href="/scegli-citta" className="location-search-location">
-            <MapPin size={19} />
-            <span>
-              {city.name} <small>· entro {filters.radiusKm} km</small>
-            </span>
-            <ChevronDown size={17} />
-          </Link>
-          <span className="search-divider" />
-          <Link href={`/cerca?citta=${city.slug}`} aria-label="Cerca" className="location-search-submit">
-            <Search size={19} />
-          </Link>
+        <div className="intro-controls">
+          <div className="location-search">
+            <Link href="/scegli-citta" className="location-search-location">
+              <MapPin size={19} />
+              <span>
+                {city.name} <small>· entro {filters.radiusKm} km</small>
+              </span>
+              <ChevronDown size={17} />
+            </Link>
+            <span className="search-divider" />
+            <Link
+              href={`/cerca?citta=${city.slug}`}
+              aria-label="Cerca"
+              className="location-search-submit"
+            >
+              <Search size={19} />
+            </Link>
+          </div>
+          <SearchBox citySlug={city.slug} variant="overlay" />
         </div>
       </section>
 
       <section className="filter-bar">
+        {venue ? (
+          <Link href={buildHref(base, params, { luogo: null })} className="filter-chip is-active">
+            {venue.name} <X size={13} />
+          </Link>
+        ) : null}
         <Link
           href={
             filters.dates.length
