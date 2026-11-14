@@ -428,7 +428,8 @@ p {
   background: #eef1f5;
 }
 
-.map-canvas {
+/* Beats MapLibre's .maplibregl-map { position: relative } on the same element. */
+.map-panel > .map-canvas {
   position: absolute;
   inset: 0;
 }

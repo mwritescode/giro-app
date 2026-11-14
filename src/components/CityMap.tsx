@@ -58,6 +58,7 @@ export function CityMap({
       }
 
       libraryRef.current = library;
+      library.setWorkerUrl("/maplibre/maplibre-gl-worker.mjs");
 
       const map = new library.Map({
         container: containerRef.current,

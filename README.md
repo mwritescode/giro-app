@@ -38,6 +38,14 @@ Links expire after 15 minutes and work once. Sending happens behind
 one-function change. Set `APP_URL` if the printed link should point somewhere
 other than the request host.
 
+### The map worker
+
+MapLibre runs tile parsing in a web worker, and Turbopack does not emit that
+worker file. `scripts/copy-maplibre-worker.mjs` copies it into
+`public/maplibre/` on install, dev and build, and `CityMap` points MapLibre at
+it with `setWorkerUrl`. `public/maplibre/` is gitignored, so the copy always
+matches the installed version.
+
 ```bash
 pnpm build && pnpm start   # production build
 ```
